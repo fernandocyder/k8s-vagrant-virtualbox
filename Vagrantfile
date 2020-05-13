@@ -8,13 +8,13 @@ Vagrant.configure("2") do |config|
       vb.cpus = 2
     end
     master.vm.box = "ubuntu/bionic64"
-    master.disksize.size = "25GB"
+    master.disksize.size = "5GB"
     master.vm.hostname = "master"
     master.vm.network :private_network, ip: "10.0.0.10"
     master.vm.provision :shell, privileged: false, inline: $provision_master_node
   end
 
-  %w{node1 node2 node3}.each_with_index do |name, i|
+  %w{node1}.each_with_index do |name, i|
     config.vm.define name do |node|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "node#{i + 1}"
