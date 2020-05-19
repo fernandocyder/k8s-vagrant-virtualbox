@@ -1,0 +1,1 @@
+vagrant ssh node1

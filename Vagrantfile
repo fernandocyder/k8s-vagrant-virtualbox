@@ -1,10 +1,11 @@
 Vagrant.configure("2") do |config|
   config.vm.provision :shell, privileged: true, inline: $install_common_tools
+  # config.vm.provision :shell, privileged: true, inline: $install_nfs_client
 
   config.vm.define :master do |master|
     master.vm.provider :virtualbox do |vb|
       vb.name = "master"
-      vb.memory = 2048
+      vb.memory = 1024
       vb.cpus = 2
     end
     master.vm.box = "ubuntu/bionic64"
@@ -14,15 +15,15 @@ Vagrant.configure("2") do |config|
     master.vm.provision :shell, privileged: false, inline: $provision_master_node
   end
 
-  %w{node1}.each_with_index do |name, i|
+  %w{node1 node2}.each_with_index do |name, i|
     config.vm.define name do |node|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "node#{i + 1}"
-        vb.memory = 2048
-        vb.cpus = 2
+        vb.memory = 1024
+        vb.cpus = 1
       end
       node.vm.box = "ubuntu/bionic64"
-      node.disksize.size = "25GB"
+      node.disksize.size = "5GB"
       node.vm.hostname = name
       node.vm.network :private_network, ip: "10.0.0.#{i + 11}"
       node.vm.provision :shell, privileged: false, inline: <<-SHELL
@@ -63,6 +64,7 @@ echo "10.0.0.10 master" >> /etc/hosts
 echo "10.0.0.11 node1" >> /etc/hosts
 echo "10.0.0.12 node2" >> /etc/hosts
 echo "10.0.0.13 node3" >> /etc/hosts
+echo "10.0.0.30 nfs" >> /etc/hosts
 
 # disable swap
 swapoff -a
@@ -129,3 +131,12 @@ SHELL
 $install_multicast = <<-SHELL
 apt-get -qq install -y avahi-daemon libnss-mdns
 SHELL
+
+$install_nfs_client = <<-SHELL
+sudo -i
+sudo apt update
+sudo apt install nfs-common -y
+sudo mkdir -p /mnt/nfs_clientshare
+sudo mount 10.0.0.30:/mnt/nfs_share  /mnt/nfs_clientshare
+SHELL
+
